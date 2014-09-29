@@ -38,38 +38,42 @@ void NoteReader::go(char* $input, char* $output) {
     
     int uniqueId = 1;
     char* command;
+    printf("asdasd");
+
     while (!feof(fp)) {
-        
         fscanf(fp, "%s\n", command);
         printf("%s\n", command);
-//        switch ($command) {
-//            case 'CREATE':
-//            case 'UPDATE':
-//                $note = Util::readXml($fp, 'note');
-//                if ($input == 'inputload') {
-//                    $note->setGuid(++$uniqueId);
-//                }
-//                $noteStore->updateNote($note);
-//                break;
-//            case 'DELETE':
-//                $guid = Util::readNextLine($fp);
-//                $noteStore->deleteNote($guid);
-//                break;
-//            case 'SEARCH':
-//                $term = Util::readNextLine($fp);
-//                $notes = $noteStore->search($term)->getNotes();
-//                if (count($notes) == 0) {
-//                    fprintf($fpo, PHP_EOL);
-//                } else {
-//                    $results = '';
-//                    foreach ($notes as $note) {
-//                        $results .= $note->getGuid() . ',';
-//                    }
-//                    fprintf($fpo, substr($results, 0, strlen($results)-1) . PHP_EOL);
-//                }
-//                break;
-//        }
+        if (strcmp(command, "CREATE") == 0 || strcmp(command, "UPDATE") == 0) {
+            printf("CRUPDATE\n");
+        }
+
     }
+    
+    //            case 'CREATE':
+    //            case 'UPDATE':
+    //                $note = Util::readXml($fp, 'note');
+    //                if ($input == 'inputload') {
+    //                    $note->setGuid(++$uniqueId);
+    //                }
+    //                $noteStore->updateNote($note);
+    //                break;
+    //            case 'DELETE':
+    //                $guid = Util::readNextLine($fp);
+    //                $noteStore->deleteNote($guid);
+    //                break;
+    //            case 'SEARCH':
+    //                $term = Util::readNextLine($fp);
+    //                $notes = $noteStore->search($term)->getNotes();
+    //                if (count($notes) == 0) {
+    //                    fprintf($fpo, PHP_EOL);
+    //                } else {
+    //                    $results = '';
+    //                    foreach ($notes as $note) {
+    //                        $results .= $note->getGuid() . ',';
+    //                    }
+    //                    fprintf($fpo, substr($results, 0, strlen($results)-1) . PHP_EOL);
+    //                }
+    //                break;
     
     fclose(fpo);
     fclose(fp);
