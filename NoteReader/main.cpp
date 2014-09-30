@@ -260,7 +260,6 @@ NoteCollection NoteStore::search(std::string term) {
     NoteCollection noteCollection;
     Note note;
     std::string guid;
-    //std::cout<<"Searching for " + term + " in a database of " <<  this->noteDatabase.size() << " items"<<"\n";
 
     for ( auto it = this->noteDatabase.begin(); it != this->noteDatabase.end(); ++it ) {
         
@@ -271,7 +270,6 @@ NoteCollection NoteStore::search(std::string term) {
         
         for (unsigned int i=0; i<words.size(); i++) {
             std::string keyword = words[i];
-            //std::cout<<keyword<<"\n";
             long wildcardAt = keyword.find_first_of('*');
             
             if (strcmp(keyword.substr(0, 4).c_str(), "tag:") == 0) {
@@ -308,7 +306,7 @@ void NoteCollection::addNote(Note note) {
 
 bool Note::hasTag(std::string term, long wildcardAt) {
     for (std::vector<std::string>::iterator it = this->tags.begin() ; it != this->tags.end(); ++it) {
-        if (wildcardAt != std::string::npos) {
+        if (wildcardAt == std::string::npos) {
             if (*it == term) {
                 return true;
             }
@@ -323,7 +321,8 @@ bool Note::hasTag(std::string term, long wildcardAt) {
 }
 
 bool Note::hasKeyword(std::string keyword, long wildcardAt) {
-    if (wildcardAt != std::string::npos) {
+
+    if (wildcardAt == std::string::npos) {
         return this->wordIndex.find(keyword) != this->wordIndex.end();
     }
     
