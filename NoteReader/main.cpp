@@ -347,13 +347,12 @@ bool Note::hasKeyword(std::string keyword, long wildcardAt) {
 bool Note::createdOnOrAfter(std::string dateString) {
     dateString += "T00:00:00Z";
     long timestamp = Util::createTimestamp(dateString);
-    //std::cout << dateString << " " << timestamp << " " << this->created << "\n";
 
     return this->created >= timestamp;
 }
 
 bool compareNotesByTime(Note a, Note b) {
-    return a.getCreated() < b.getCreated() ? -1 : 1;
+    return a.getCreated() < b.getCreated();
 }
 
 void NoteCollection::sortByDate() {
