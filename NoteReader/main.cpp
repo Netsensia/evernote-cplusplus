@@ -127,7 +127,14 @@ Note Util::makeNoteFromXml(std::string xmlString) {
 
 time_t Util::createTimestamp(std::string dateString) {
     struct tm t;
-    strptime(dateString.c_str(), "%Y-%m-%dT%H:%M:%SZ", &t);
+    std::string format;
+    if (dateString.find('-') != std::string::npos) {
+        format = "%Y-%m-%dT%H:%M:%SZ";
+    } else {
+        format = "%Y%m%dT%H:%M:%SZ";
+    }
+    
+    strptime(dateString.c_str(), format.c_str(), &t);
     time_t t2 = mktime(&t);
     return t2;
 }
@@ -338,7 +345,11 @@ bool Note::hasKeyword(std::string keyword, long wildcardAt) {
 }
 
 bool Note::createdOnOrAfter(std::string dateString) {
-    return this->created >= Util::createTimestamp(dateString + "T00:00:00+0000");
+    dateString += "T00:00:00Z";
+    long timestamp = Util::createTimestamp(dateString);
+    //std::cout << dateString << " " << timestamp << " " << this->created << "\n";
+
+    return this->created >= timestamp;
 }
 
 bool compareNotesByTime(Note a, Note b) {
