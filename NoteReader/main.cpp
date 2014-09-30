@@ -22,6 +22,9 @@ public:
     void setTags(std::vector<std::string>);
     long getCreated();
     void setCreated(std::string);
+    bool hasTag(std::string, long);
+    bool hasKeyword(std::string, long);
+    bool createdOnOrAfter(std::string);
 private:
     std::string guid;
     std::vector<std::string> tags;
@@ -31,16 +34,23 @@ private:
     std::unordered_map<std::string, bool> wordIndex;
 };
 
+class NoteCollection {
+public:
+    std::vector<Note> getNotes();
+    void addNote(Note);
+    void sortByDate();
+private:
+    static int sortByTime(Note, Note);
+    std::vector<Note> notes;
+};
+
 class NoteStore {
 public:
     void updateNote(Note);
     void deleteNote(std::string);
+    NoteCollection search(std::string);
 private:
     std::unordered_map<std::string, Note> noteDatabase;
-};
-
-class NoteCollection {
-
 };
 
 class Util {
@@ -220,6 +230,72 @@ std::vector<std::string> Util::extractVectorFromXml(std::string xml, std::string
     return retVector;
 }
 
+NoteCollection NoteStore::search(std::string term) {
+    
+    std::transform(term.begin(), term.end(), term.begin(), ::tolower);
+
+    std::string word = "";
+    std::vector<std::string> words;
+    
+    for (unsigned int i=0; i<term.length(); i++) {
+        char c = term[i];
+        if (c != ' ') {
+            word += c;
+        } else {
+            if (word.length() > 0) {
+                words.push_back(word);
+            }
+            word = "";
+        }
+    }
+    
+    NoteCollection noteCollection;
+    Note note;
+    std::string guid;
+    
+    for ( auto it = this->noteDatabase.begin(); it != this->noteDatabase.end(); ++it ) {
+        
+        guid = it->first;
+        note = it->second;
+        
+        bool matchesAll = true;
+        
+        for (unsigned int i=0; i<words.size(); i++) {
+            std::string keyword = "";
+            long wildcardAt = keyword.find_first_of('*');
+            
+            if (strcmp(keyword.substr(0, 4).c_str(), "tag:") == 0) {
+                if (!note.hasTag(keyword.substr(4,keyword.length()-4),wildcardAt)) {
+                    matchesAll = false;
+                    break;
+                }
+            } else if (strcmp(keyword.substr(0, 4).c_str(), "created:") == 0) {
+                if (!note.createdOnOrAfter(keyword.substr(7,keyword.length()-7))) {
+                    matchesAll = false;
+                    break;
+                }
+            } else {
+                if (!note.hasKeyword(keyword, wildcardAt)) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+        }
+        
+        if (matchesAll) {
+            noteCollection.addNote(note);
+        }
+    }
+    
+    noteCollection.sortByDate();
+    return noteCollection;
+    
+}
+
+void NoteCollection::addNote(Note note) {
+    this->notes.push_back(note);
+}
+
 void NoteReader::go(char* input, char* output) {
 
     NoteStore noteStore;
@@ -243,11 +319,12 @@ void NoteReader::go(char* input, char* output) {
             std::string guid = Util::readNextLine(fp);
             noteStore.deleteNote(guid);
         }
+        if (strcmp(command.c_str(), "SEARCH") == 0) {
+            std::string term = Util::readNextLine(fp);
+        }
 
     }
 
-    //            case 'SEARCH':
-    //                $term = Util::readNextLine($fp);
     //                $notes = $noteStore->search($term)->getNotes();
     //                if (count($notes) == 0) {
     //                    fprintf($fpo, PHP_EOL);
@@ -258,7 +335,6 @@ void NoteReader::go(char* input, char* output) {
     //                    }
     //                    fprintf($fpo, substr($results, 0, strlen($results)-1) . PHP_EOL);
     //                }
-    //                break;
 
     fclose(fpo);
     fclose(fp);
