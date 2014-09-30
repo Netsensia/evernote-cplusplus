@@ -18,6 +18,10 @@ public:
     void setGuid(std::string);
     std::string getContent();
     void setContent(std::string);
+    std::vector<std::string> getTags();
+    void setTags(std::vector<std::string>);
+    int getCreated();
+    void setCreated(std::string);
 private:
     std::string guid;
     std::vector<std::string> tags;
@@ -44,6 +48,8 @@ public:
     static std::string getXmlString(FILE*, std::string);
     static Note makeNoteFromXml(std::string);
     static Note readXml(FILE*, std::string);
+    static std::string extractStringFromXml(std::string, std::string);
+    static std::vector<std::string> extractVectorFromXml(std::string, std::string);
 };
 
 class NoteReader {
@@ -53,7 +59,11 @@ public:
 
 std::string Util::readNextLine(FILE* fp) {
     char* line = new char[500];
-    fscanf(fp, "%s\n", line);
+    std::fgets(line,  500, fp);
+
+    if (line[strlen(line)-1] == '\n') {
+        line[strlen(line)-1] = '\0';
+    }
     return line;
 }
 
@@ -63,6 +73,7 @@ std::string Util::getXmlString(FILE* fp, std::string tag) {
     
     while (!feof(fp)) {
         line = Util::readNextLine(fp);
+
         xmlString += line;
         if (strcmp(line.c_str(), tag.c_str()) == 0) {
             break;
@@ -86,9 +97,35 @@ Note Util::readXml(FILE* fp, std::string tag) {
 }
 
 Note Util::makeNoteFromXml(std::string xmlString) {
+    std::string guid = Util::extractStringFromXml(xmlString, "guid");
+    std::string content = Util::extractStringFromXml(xmlString, "content");
+    std::string created = Util::extractStringFromXml(xmlString, "created");
+    std::vector<std::string> tags = Util::extractVectorFromXml(xmlString, "tag");
+
     Note note;
-    note.setContent(xmlString);
+    
+    note.setGuid(guid);
+    note.setContent(content);
+    note.setCreated(created);
+    note.setTags(tags);
+    
     return note;
+}
+
+void Note::setTags(std::vector<std::string> tags) {
+    this->tags = tags;
+}
+
+std::vector<std::string> Note::getTags() {
+    return this->tags;
+}
+
+void Note::setCreated(std::string dateString) {
+    this->created = 1;
+}
+
+int Note::getCreated() {
+    return this->created;
 }
 
 std::string Note::getGuid() {
@@ -111,6 +148,48 @@ void NoteStore::updateNote(Note note) {
     this->noteDatabase[note.getGuid()] = note;
 };
 
+std::string Util::extractStringFromXml(std::string xml, std::string tag) {
+    std::string retString = "";
+    std::string openTag = "<" + tag + ">";
+    std::string closeTag = "</" + tag + ">";
+    
+    char* openTagPointer = strstr(xml.c_str(), openTag.c_str());
+    char* closeTagPointer = strstr(xml.c_str(), closeTag.c_str());
+    
+    for (char* c=openTagPointer+openTag.length(); c<closeTagPointer; c++) {
+        retString += c[0];
+    }
+    
+    return retString;
+}
+
+std::vector<std::string> Util::extractVectorFromXml(std::string xml, std::string tag) {
+    std::vector<std::string> retVector;
+    std::string s;
+    
+    std::string openTag = "<" + tag + ">";
+    std::string closeTag = "</" + tag + ">";
+    
+    char* openTagPointer = strstr(xml.c_str(), openTag.c_str());
+    char* closeTagPointer = strstr(xml.c_str(), closeTag.c_str());
+    
+    char* c;
+    
+    while (openTagPointer != NULL) {
+        s = "";
+        
+        for (c=openTagPointer+openTag.length(); c<closeTagPointer; c++) {
+            s += c[0];
+        }
+        retVector.push_back(s);
+        
+        openTagPointer = strstr(closeTagPointer+1, openTag.c_str());
+        closeTagPointer = strstr(closeTagPointer+1, closeTag.c_str());
+    };
+
+    return retVector;
+}
+
 void NoteReader::go(char* input, char* output) {
 
     NoteStore noteStore;
@@ -122,6 +201,7 @@ void NoteReader::go(char* input, char* output) {
     
     while (!feof(fp)) {
         command = Util::readNextLine(fp);
+
         if (strcmp(command.c_str(), "CREATE") == 0 || strcmp(command.c_str(), "UPDATE") == 0) {
             Note note = Util::readXml(fp, "</note>");
             if (strcmp(input, "inputload") == 0) {
