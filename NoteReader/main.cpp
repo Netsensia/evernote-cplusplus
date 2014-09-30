@@ -296,6 +296,52 @@ void NoteCollection::addNote(Note note) {
     this->notes.push_back(note);
 }
 
+bool Note::hasTag(std::string term, long wildcardAt) {
+    for (std::vector<std::string>::iterator it = this->tags.begin() ; it != this->tags.end(); ++it) {
+        if (wildcardAt != std::string::npos) {
+            if (*it == term) {
+                return true;
+            }
+        } else {
+            if (strcmp(it->substr(0, wildcardAt).c_str(), term.substr(0, wildcardAt).c_str()) == 0) {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+bool Note::hasKeyword(std::string keyword, long wildcardAt) {
+    if (wildcardAt != std::string::npos) {
+        return this->wordIndex.find(keyword) != this->wordIndex.end();
+    }
+    
+    for (std::vector<std::string>::iterator it = this->words.begin() ; it != this->words.end(); ++it) {
+        if (strcmp(it->substr(0, wildcardAt).c_str(), keyword.substr(0, wildcardAt).c_str()) == 0) {
+            return true;
+        }
+    }
+                
+    return false;
+}
+
+bool Note::createdOnOrAfter(std::string dateString) {
+    return this->created >= Util::createTimestamp(dateString + "T00:00:00+0000");
+}
+
+bool compareNotesByTime(Note a, Note b) {
+    return a.getCreated() < b.getCreated() ? -1 : 1;
+}
+
+void NoteCollection::sortByDate() {
+    std::sort(this->notes.begin(), this->notes.end(), compareNotesByTime);
+}
+
+std::vector<Note> NoteCollection::getNotes() {
+    return this->notes;
+}
+
 void NoteReader::go(char* input, char* output) {
 
     NoteStore noteStore;
@@ -321,20 +367,23 @@ void NoteReader::go(char* input, char* output) {
         }
         if (strcmp(command.c_str(), "SEARCH") == 0) {
             std::string term = Util::readNextLine(fp);
+            NoteCollection noteCollection = noteStore.search(term);
+            std::vector<Note> notes = noteCollection.getNotes();
+            if (notes.size() == 0) {
+                fprintf(fpo, "\n");
+            } else {
+                std::string results = "";
+                for (std::vector<Note>::iterator note = notes.begin() ; note != notes.end(); ++note) {
+                    results += note->getGuid() + ",";
+                }
+                std::string output = results.substr(0,results.length()-1);
+                fprintf(fpo, "%s\n", output.c_str());
+                std::cout << output;
+            }
+            
         }
 
     }
-
-    //                $notes = $noteStore->search($term)->getNotes();
-    //                if (count($notes) == 0) {
-    //                    fprintf($fpo, PHP_EOL);
-    //                } else {
-    //                    $results = '';
-    //                    foreach ($notes as $note) {
-    //                        $results .= $note->getGuid() . ',';
-    //                    }
-    //                    fprintf($fpo, substr($results, 0, strlen($results)-1) . PHP_EOL);
-    //                }
 
     fclose(fpo);
     fclose(fp);
@@ -346,7 +395,7 @@ int main(int argc, const char * argv[]) {
 
     noteReader.go(
         (char*)"/Users/chris/git/evernote/tests/input2",
-        (char*)"/Users/chris/git/evernote/tests/output2_cpp"
+        (char*)"/Users/chris/git/evernote/tests/output_cpp_2"
     );
 
     return 0;
