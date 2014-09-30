@@ -8,10 +8,37 @@
 
 /* Begin PBXBuildFile section */
 		832E312E19D9FB1D00A572BB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 832E312D19D9FB1D00A572BB /* main.cpp */; };
+		832E313B19DB2D3F00A572BB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 832E313A19DB2D3F00A572BB /* main.cpp */; };
+		832E314019DB30A600A572BB /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832E313F19DB30A600A572BB /* libgtest_main.a */; };
+		832E314219DB322A00A572BB /* gtest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 832E314119DB322A00A572BB /* gtest.framework */; };
+		832E314319DB325400A572BB /* UnitTests in Sources */ = {isa = PBXBuildFile; fileRef = 832E313819DB2D3F00A572BB /* UnitTests */; };
+		839CC72819DB401C00CAE21A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 832E312D19D9FB1D00A572BB /* main.cpp */; };
+		839CC72919DB40A600CAE21A /* NoteReader in Sources */ = {isa = PBXBuildFile; fileRef = 832E312A19D9FB1D00A572BB /* NoteReader */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		832E314419DB333F00A572BB /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+			);
+			script = "";
+		};
+/* End PBXBuildRule section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		832E312819D9FB1D00A572BB /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		832E313619DB2D3F00A572BB /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -25,6 +52,10 @@
 /* Begin PBXFileReference section */
 		832E312A19D9FB1D00A572BB /* NoteReader */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NoteReader; sourceTree = BUILT_PRODUCTS_DIR; };
 		832E312D19D9FB1D00A572BB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		832E313819DB2D3F00A572BB /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
+		832E313A19DB2D3F00A572BB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		832E313F19DB30A600A572BB /* libgtest_main.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgtest_main.a; path = "../../../../../Library/Developer/Xcode/DerivedData/gtest-eltflclbbwvukqhcyjzmzdvvcfey/Build/Products/Debug/libgtest_main.a"; sourceTree = "<group>"; };
+		832E314119DB322A00A572BB /* gtest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = gtest.framework; path = "../../../../Library/Developer/Xcode/DerivedData/gtest-eltflclbbwvukqhcyjzmzdvvcfey/Build/Products/Debug/gtest.framework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +63,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				832E314019DB30A600A572BB /* libgtest_main.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		832E313519DB2D3F00A572BB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				832E314219DB322A00A572BB /* gtest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +82,8 @@
 			isa = PBXGroup;
 			children = (
 				832E312C19D9FB1D00A572BB /* NoteReader */,
+				832E313919DB2D3F00A572BB /* UnitTests */,
+				832E314119DB322A00A572BB /* gtest.framework */,
 				832E312B19D9FB1D00A572BB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,6 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				832E312A19D9FB1D00A572BB /* NoteReader */,
+				832E313819DB2D3F00A572BB /* UnitTests */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -57,9 +100,18 @@
 		832E312C19D9FB1D00A572BB /* NoteReader */ = {
 			isa = PBXGroup;
 			children = (
+				832E313F19DB30A600A572BB /* libgtest_main.a */,
 				832E312D19D9FB1D00A572BB /* main.cpp */,
 			);
 			path = NoteReader;
+			sourceTree = "<group>";
+		};
+		832E313919DB2D3F00A572BB /* UnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				832E313A19DB2D3F00A572BB /* main.cpp */,
+			);
+			path = UnitTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -82,6 +134,24 @@
 			productReference = 832E312A19D9FB1D00A572BB /* NoteReader */;
 			productType = "com.apple.product-type.tool";
 		};
+		832E313719DB2D3F00A572BB /* UnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 832E313C19DB2D3F00A572BB /* Build configuration list for PBXNativeTarget "UnitTests" */;
+			buildPhases = (
+				832E313419DB2D3F00A572BB /* Sources */,
+				832E313519DB2D3F00A572BB /* Frameworks */,
+				832E313619DB2D3F00A572BB /* CopyFiles */,
+			);
+			buildRules = (
+				832E314419DB333F00A572BB /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = UnitTests;
+			productName = UnitTests;
+			productReference = 832E313819DB2D3F00A572BB /* UnitTests */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -92,6 +162,9 @@
 				ORGANIZATIONNAME = "Chris Moreton";
 				TargetAttributes = {
 					832E312919D9FB1D00A572BB = {
+						CreatedOnToolsVersion = 6.0.1;
+					};
+					832E313719DB2D3F00A572BB = {
 						CreatedOnToolsVersion = 6.0.1;
 					};
 				};
@@ -109,6 +182,7 @@
 			projectRoot = "";
 			targets = (
 				832E312919D9FB1D00A572BB /* NoteReader */,
+				832E313719DB2D3F00A572BB /* UnitTests */,
 			);
 		};
 /* End PBXProject section */
@@ -119,6 +193,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				832E312E19D9FB1D00A572BB /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		832E313419DB2D3F00A572BB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				839CC72919DB40A600CAE21A /* NoteReader in Sources */,
+				839CC72819DB401C00CAE21A /* main.cpp in Sources */,
+				832E314319DB325400A572BB /* UnitTests in Sources */,
+				832E313B19DB2D3F00A572BB /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,6 +287,10 @@
 		832E313219D9FB1D00A572BB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/gtest-eltflclbbwvukqhcyjzmzdvvcfey/Build/Products/Debug",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -209,6 +298,38 @@
 		832E313319D9FB1D00A572BB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/gtest-eltflclbbwvukqhcyjzmzdvvcfey/Build/Products/Debug",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		832E313D19DB2D3F00A572BB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLD_FRAMEWORK_PATH = "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/gtest-eltflclbbwvukqhcyjzmzdvvcfey/Build/Products/Debug";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/gtest-eltflclbbwvukqhcyjzmzdvvcfey/Build/Products/Debug",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		832E313E19DB2D3F00A572BB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLD_FRAMEWORK_PATH = "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/gtest-eltflclbbwvukqhcyjzmzdvvcfey/Build/Products/Debug";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/gtest-eltflclbbwvukqhcyjzmzdvvcfey/Build/Products/Debug",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -232,6 +353,16 @@
 				832E313319D9FB1D00A572BB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		832E313C19DB2D3F00A572BB /* Build configuration list for PBXNativeTarget "UnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				832E313D19DB2D3F00A572BB /* Debug */,
+				832E313E19DB2D3F00A572BB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

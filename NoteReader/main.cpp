@@ -168,6 +168,9 @@ void Note::setContent(std::string content) {
     for (unsigned int i=0; i<content.length(); i++) {
         char c = content[i];
         if ((c>='A' && c<='Z') || (c >= '0' && c<='9') || (c>='a' && c<='z') || c=='\'') {
+            if (c>='A' && c<='Z') {
+                c += 32;
+            }
             word += c;
         } else {
             if (word.length() > 0) {
@@ -177,6 +180,9 @@ void Note::setContent(std::string content) {
             
             word = "";
         }
+    }
+    if (word.length() > 0) {
+        this->words.push_back(word);
     }
 }
 
@@ -248,11 +254,15 @@ NoteCollection NoteStore::search(std::string term) {
             word = "";
         }
     }
+    if (word.length() > 0) {
+        words.push_back(word);
+    }
     
     NoteCollection noteCollection;
     Note note;
     std::string guid;
-    
+    //std::cout<<"Searching for " + term + " in a database of " <<  this->noteDatabase.size() << " items"<<"\n";
+
     for ( auto it = this->noteDatabase.begin(); it != this->noteDatabase.end(); ++it ) {
         
         guid = it->first;
@@ -261,7 +271,8 @@ NoteCollection NoteStore::search(std::string term) {
         bool matchesAll = true;
         
         for (unsigned int i=0; i<words.size(); i++) {
-            std::string keyword = "";
+            std::string keyword = words[i];
+            //std::cout<<keyword<<"\n";
             long wildcardAt = keyword.find_first_of('*');
             
             if (strcmp(keyword.substr(0, 4).c_str(), "tag:") == 0) {
@@ -269,8 +280,8 @@ NoteCollection NoteStore::search(std::string term) {
                     matchesAll = false;
                     break;
                 }
-            } else if (strcmp(keyword.substr(0, 4).c_str(), "created:") == 0) {
-                if (!note.createdOnOrAfter(keyword.substr(7,keyword.length()-7))) {
+            } else if (strcmp(keyword.substr(0, 8).c_str(), "created:") == 0) {
+                if (!note.createdOnOrAfter(keyword.substr(8,keyword.length()-8))) {
                     matchesAll = false;
                     break;
                 }
@@ -371,6 +382,7 @@ void NoteReader::go(char* input, char* output) {
             std::vector<Note> notes = noteCollection.getNotes();
             if (notes.size() == 0) {
                 fprintf(fpo, "\n");
+                std::cout << "\n";
             } else {
                 std::string results = "";
                 for (std::vector<Note>::iterator note = notes.begin() ; note != notes.end(); ++note) {
