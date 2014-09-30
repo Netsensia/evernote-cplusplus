@@ -20,15 +20,15 @@ public:
     void setContent(std::string);
     std::vector<std::string> getTags();
     void setTags(std::vector<std::string>);
-    int getCreated();
+    long getCreated();
     void setCreated(std::string);
 private:
     std::string guid;
     std::vector<std::string> tags;
     std::string content;
-    int created;
+    long created;
     std::vector<std::string> words;
-    std::vector<std::string> wordIndex;
+    std::unordered_map<std::string, bool> wordIndex;
 };
 
 class NoteStore {
@@ -52,6 +52,7 @@ public:
     static std::string extractStringFromXml(std::string, std::string);
     static std::vector<std::string> extractVectorFromXml(std::string, std::string);
     static time_t createTimestamp(std::string);
+    static std::string trim(std::string const& str);
 };
 
 class NoteReader {
@@ -133,7 +134,7 @@ void Note::setCreated(std::string dateString) {
     this->created = Util::createTimestamp(dateString);
 }
 
-int Note::getCreated() {
+long Note::getCreated() {
     return this->created;
 }
 
@@ -151,6 +152,22 @@ std::string Note::getContent() {
 
 void Note::setContent(std::string content) {
     this->content = content;
+    
+    std::string word = "";
+    
+    for (unsigned int i=0; i<content.length(); i++) {
+        char c = content[i];
+        if ((c>='A' && c<='Z') || (c >= '0' && c<='9') || (c>='a' && c<='z') || c=='\'') {
+            word += c;
+        } else {
+            if (word.length() > 0) {
+                this->words.push_back(word);
+                this->wordIndex[word] = true;
+            }
+            
+            word = "";
+        }
+    }
 }
 
 void NoteStore::updateNote(Note note) {
