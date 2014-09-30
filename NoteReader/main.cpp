@@ -378,7 +378,7 @@ void NoteReader::go(char* input, char* output) {
                 }
                 std::string output = results.substr(0,results.length()-1);
                 fprintf(fpo, "%s\n", output.c_str());
-                std::cout << output;
+                std::cout << output << "\n";
             }
             
         }
