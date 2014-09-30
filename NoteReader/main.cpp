@@ -34,6 +34,7 @@ private:
 class NoteStore {
 public:
     void updateNote(Note);
+    void deleteNote(std::string);
 private:
     std::unordered_map<std::string, Note> noteDatabase;
 };
@@ -156,6 +157,10 @@ void NoteStore::updateNote(Note note) {
     this->noteDatabase[note.getGuid()] = note;
 };
 
+void NoteStore::deleteNote(std::string guid) {
+    this->noteDatabase.erase(guid);
+};
+
 std::string Util::extractStringFromXml(std::string xml, std::string tag) {
     std::string retString = "";
     std::string openTag = "<" + tag + ">";
@@ -218,9 +223,8 @@ void NoteReader::go(char* input, char* output) {
             noteStore.updateNote(note);
         }
         if (strcmp(command.c_str(), "DELETE") == 0) {
-            //                $guid = Util::readNextLine($fp);
-            //                $noteStore->deleteNote($guid);
-            //                break;
+            std::string guid = Util::readNextLine(fp);
+            noteStore.deleteNote(guid);
         }
 
     }
@@ -248,8 +252,8 @@ int main(int argc, const char * argv[]) {
     NoteReader noteReader;
 
     noteReader.go(
-        (char*)"/Users/chris/git/evernote/tests/input1",
-        (char*)"/Users/chris/git/evernote/tests/output1_cpp"
+        (char*)"/Users/chris/git/evernote/tests/input2",
+        (char*)"/Users/chris/git/evernote/tests/output2_cpp"
     );
 
     return 0;
