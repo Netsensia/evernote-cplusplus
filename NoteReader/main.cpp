@@ -50,6 +50,7 @@ public:
     static Note readXml(FILE*, std::string);
     static std::string extractStringFromXml(std::string, std::string);
     static std::vector<std::string> extractVectorFromXml(std::string, std::string);
+    static time_t createTimestamp(std::string);
 };
 
 class NoteReader {
@@ -112,6 +113,13 @@ Note Util::makeNoteFromXml(std::string xmlString) {
     return note;
 }
 
+time_t Util::createTimestamp(std::string dateString) {
+    struct tm t;
+    strptime(dateString.c_str(), "%Y-%m-%dT%H:%M:%SZ", &t);
+    time_t t2 = mktime(&t);
+    return t2;
+}
+
 void Note::setTags(std::vector<std::string> tags) {
     this->tags = tags;
 }
@@ -121,7 +129,7 @@ std::vector<std::string> Note::getTags() {
 }
 
 void Note::setCreated(std::string dateString) {
-    this->created = 1;
+    this->created = Util::createTimestamp(dateString);
 }
 
 int Note::getCreated() {
