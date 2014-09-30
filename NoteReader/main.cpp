@@ -1,11 +1,3 @@
-//
-//  main.cpp
-//  NoteReader
-//
-//  Created by Chris Moreton on 29/09/2014.
-//  Copyright (c) 2014 Chris Moreton. All rights reserved.
-//
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -67,7 +59,7 @@ public:
 
 class NoteReader {
 public:
-    void go(char*, char*);
+    void go();
 };
 
 std::string Util::readNextLine(FILE* fp) {
@@ -206,10 +198,10 @@ std::string Util::extractStringFromXml(std::string xml, std::string tag) {
     std::string openTag = "<" + tag + ">";
     std::string closeTag = "</" + tag + ">";
     
-    char* openTagPointer = strstr(xml.c_str(), openTag.c_str());
-    char* closeTagPointer = strstr(xml.c_str(), closeTag.c_str());
+    const char* openTagPointer = strstr(xml.c_str(), openTag.c_str());
+    const char* closeTagPointer = strstr(xml.c_str(), closeTag.c_str());
     
-    for (char* c=openTagPointer+openTag.length(); c<closeTagPointer; c++) {
+    for (const char* c=openTagPointer+openTag.length(); c<closeTagPointer; c++) {
         retString += c[0];
     }
     
@@ -223,10 +215,10 @@ std::vector<std::string> Util::extractVectorFromXml(std::string xml, std::string
     std::string openTag = "<" + tag + ">";
     std::string closeTag = "</" + tag + ">";
     
-    char* openTagPointer = strstr(xml.c_str(), openTag.c_str());
-    char* closeTagPointer = strstr(xml.c_str(), closeTag.c_str());
+    const char* openTagPointer = strstr(xml.c_str(), openTag.c_str());
+    const char* closeTagPointer = strstr(xml.c_str(), closeTag.c_str());
     
-    char* c;
+    const char* c;
     
     while (openTagPointer != NULL) {
         s = "";
@@ -363,35 +355,29 @@ std::vector<Note> NoteCollection::getNotes() {
     return this->notes;
 }
 
-void NoteReader::go(char* input, char* output) {
+void NoteReader::go() {
 
     NoteStore noteStore;
-    FILE *fp = fopen(input, "r");
-    FILE *fpo = fopen(output, "w");
 
     int uniqueId = 1;
     std::string command;
     
-    while (!feof(fp)) {
-        command = Util::readNextLine(fp);
+    while (!feof(stdin)) {
+        command = Util::readNextLine(stdin);
 
         if (strcmp(command.c_str(), "CREATE") == 0 || strcmp(command.c_str(), "UPDATE") == 0) {
-            Note note = Util::readXml(fp, "</note>");
-            if (strcmp(input, "inputload") == 0) {
-                note.setGuid(std::to_string(++uniqueId));
-            }
+            Note note = Util::readXml(stdin, "</note>");
             noteStore.updateNote(note);
         }
         if (strcmp(command.c_str(), "DELETE") == 0) {
-            std::string guid = Util::readNextLine(fp);
+            std::string guid = Util::readNextLine(stdin);
             noteStore.deleteNote(guid);
         }
         if (strcmp(command.c_str(), "SEARCH") == 0) {
-            std::string term = Util::readNextLine(fp);
+            std::string term = Util::readNextLine(stdin);
             NoteCollection noteCollection = noteStore.search(term);
             std::vector<Note> notes = noteCollection.getNotes();
             if (notes.size() == 0) {
-                fprintf(fpo, "\n");
                 std::cout << "\n";
             } else {
                 std::string results = "";
@@ -399,26 +385,19 @@ void NoteReader::go(char* input, char* output) {
                     results += note->getGuid() + ",";
                 }
                 std::string output = results.substr(0,results.length()-1);
-                fprintf(fpo, "%s\n", output.c_str());
                 std::cout << output << "\n";
             }
             
         }
 
     }
-
-    fclose(fpo);
-    fclose(fp);
 }
 
 int main(int argc, const char * argv[]) {
 
     NoteReader noteReader;
 
-    noteReader.go(
-        (char*)"/Users/chris/git/evernote/tests/input2",
-        (char*)"/Users/chris/git/evernote/tests/output_cpp_2"
-    );
+    noteReader.go();
 
     return 0;
 }
