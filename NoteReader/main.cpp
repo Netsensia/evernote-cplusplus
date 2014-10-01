@@ -4,6 +4,8 @@
 #include <iterator>
 #include <unordered_map>
 
+std::unordered_map<std::string, std::vector<std::string>> g_wordIndex;
+
 class Note {
 public:
     std::string getGuid();
@@ -169,6 +171,7 @@ void Note::setContent(std::string content) {
                 count++;
                 this->words.push_back(word);
                 this->wordIndex[word] = true;
+                g_wordIndex[word].push_back(this->guid);
             }
             
             word = "";
@@ -247,6 +250,7 @@ NoteCollection NoteStore::search(std::string term) {
             word = "";
         }
     }
+    
     if (word.length() > 0) {
         words.push_back(word);
     }
@@ -254,36 +258,45 @@ NoteCollection NoteStore::search(std::string term) {
     NoteCollection noteCollection;
     Note note;
 
-    for ( auto it = this->noteDatabase.begin(); it != this->noteDatabase.end(); ++it ) {
-        
-        note = it->second;
-        
-        bool matchesAll = true;
-        
-        for (unsigned int i=0; i<words.size(); i++) {
-            std::string keyword = words[i];
-            long wildcardAt = keyword.find_first_of('*');
+    if (words.size() == 1 && words[0].find_first_of('*') == std::string::npos && words[0].find_first_of(':') == std::string::npos) {
+        // short cut
+        for (std::vector<std::string>::iterator it = g_wordIndex[words[0]].begin() ; it != g_wordIndex[words[0]].end(); ++it) {
+            Note foundNote;
+            foundNote.setGuid(*it);
+            noteCollection.addNote(foundNote);
+        }
+    } else {
+        for (auto it = this->noteDatabase.begin(); it != this->noteDatabase.end(); ++it) {
             
-            if (strcmp(keyword.substr(0, 4).c_str(), "tag:") == 0) {
-                if (!note.hasTag(keyword.substr(4,keyword.length()-4),wildcardAt-4)) {
-                    matchesAll = false;
-                    break;
-                }
-            } else if (strcmp(keyword.substr(0, 8).c_str(), "created:") == 0) {
-                if (!note.createdOnOrAfter(keyword.substr(8,keyword.length()-8))) {
-                    matchesAll = false;
-                    break;
-                }
-            } else {
-                if (!note.hasKeyword(keyword, wildcardAt)) {
-                    matchesAll = false;
-                    break;
+            note = it->second;
+            
+            bool matchesAll = true;
+            
+            for (unsigned int i=0; i<words.size(); i++) {
+                std::string keyword = words[i];
+                long wildcardAt = keyword.find_first_of('*');
+                
+                if (strcmp(keyword.substr(0, 4).c_str(), "tag:") == 0) {
+                    if (!note.hasTag(keyword.substr(4,keyword.length()-4),wildcardAt-4)) {
+                        matchesAll = false;
+                        break;
+                    }
+                } else if (strcmp(keyword.substr(0, 8).c_str(), "created:") == 0) {
+                    if (!note.createdOnOrAfter(keyword.substr(8,keyword.length()-8))) {
+                        matchesAll = false;
+                        break;
+                    }
+                } else {
+                    if (!note.hasKeyword(keyword, wildcardAt)) {
+                        matchesAll = false;
+                        break;
+                    }
                 }
             }
-        }
-        
-        if (matchesAll) {
-            noteCollection.addNote(note);
+            
+            if (matchesAll) {
+                noteCollection.addNote(note);
+            }
         }
     }
     
@@ -386,8 +399,8 @@ int main(int argc, const char * argv[]) {
 
     NoteReader noteReader;
 
-    FILE* f = fopen("/Users/chris/git/evernote/tests/inputload", "r");
-    noteReader.go(f);
+    //FILE* f = fopen("/Users/chris/git/evernote/tests/input3", "r");
+    noteReader.go(stdin);
 
     return 0;
 }
