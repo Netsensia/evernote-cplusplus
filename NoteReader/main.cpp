@@ -85,14 +85,6 @@ std::string Util::getXmlString(FILE* fp, std::string tag) {
         }
     }
     
-    size_t index = 0;
-    while (true) {
-        index = xmlString.find("&", index);
-        if (index == std::string::npos) break;
-        xmlString.replace(index++, 1, "&amp;");
-        index ++;
-    }
-    
     return xmlString;
 }
 
@@ -163,6 +155,7 @@ void Note::setContent(std::string content) {
     this->content = content;
     
     std::string word = "";
+    int count = -1;
     
     for (unsigned int i=0; i<content.length(); i++) {
         char c = content[i];
@@ -173,6 +166,7 @@ void Note::setContent(std::string content) {
             word += c;
         } else {
             if (word.length() > 0) {
+                count++;
                 this->words.push_back(word);
                 this->wordIndex[word] = true;
             }
@@ -273,7 +267,7 @@ NoteCollection NoteStore::search(std::string term) {
             long wildcardAt = keyword.find_first_of('*');
             
             if (strcmp(keyword.substr(0, 4).c_str(), "tag:") == 0) {
-                if (!note.hasTag(keyword.substr(4,keyword.length()-4),wildcardAt)) {
+                if (!note.hasTag(keyword.substr(4,keyword.length()-4),wildcardAt-4)) {
                     matchesAll = false;
                     break;
                 }
@@ -358,7 +352,6 @@ void NoteReader::go() {
 
     NoteStore noteStore;
 
-    int uniqueId = 1;
     std::string command;
     
     while (!feof(stdin)) {
