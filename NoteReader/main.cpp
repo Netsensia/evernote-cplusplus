@@ -4,8 +4,6 @@
 #include <iterator>
 #include <unordered_map>
 
-std::unordered_map<std::string, std::vector<std::string>> g_wordIndex;
-
 class Note {
 public:
     std::string getGuid();
@@ -19,6 +17,7 @@ public:
     bool hasTag(std::string, long);
     bool hasKeyword(std::string, long);
     bool createdOnOrAfter(std::string);
+    std::vector<std::string> getWords();
 private:
     std::string guid;
     std::vector<std::string> tags;
@@ -133,6 +132,10 @@ std::vector<std::string> Note::getTags() {
     return this->tags;
 }
 
+std::vector<std::string> Note::getWords() {
+    return this->words;
+}
+
 void Note::setCreated(std::string dateString) {
     this->created = Util::createTimestamp(dateString);
 }
@@ -153,6 +156,8 @@ std::string Note::getContent() {
     return this->content;
 }
 
+std::unordered_map<std::string, std::vector<std::string>> g_wordIndex;
+
 void Note::setContent(std::string content) {
     this->content = content;
     
@@ -171,7 +176,9 @@ void Note::setContent(std::string content) {
                 count++;
                 this->words.push_back(word);
                 this->wordIndex[word] = true;
-                g_wordIndex[word].push_back(this->guid);
+                if (std::find(g_wordIndex[word].begin(), g_wordIndex[word].end(), this->guid) == g_wordIndex[word].end()) {
+                    g_wordIndex[word].push_back(this->guid);
+                }
             }
             
             word = "";
@@ -187,7 +194,24 @@ void NoteStore::updateNote(Note note) {
 };
 
 void NoteStore::deleteNote(std::string guid) {
+    std::vector<std::string> words = this->noteDatabase[guid].getWords();
+    
+    for (std::vector<std::string>::iterator it = words.begin() ; it != words.end(); ++it) {
+
+        for (std::vector<std::string>::iterator it2 = g_wordIndex[*it].begin() ; it2 !=  g_wordIndex[*it].end(); ++it2) {
+
+            if (*it2 == guid) {
+                g_wordIndex[*it].erase(it2);
+                if (it2 ==  g_wordIndex[*it].end()) {
+                    break;
+                }
+            }
+        }
+    }
+    
     this->noteDatabase.erase(guid);
+
+    
 };
 
 std::string Util::extractStringFromXml(std::string xml, std::string tag) {
@@ -261,8 +285,7 @@ NoteCollection NoteStore::search(std::string term) {
     if (words.size() == 1 && words[0].find_first_of('*') == std::string::npos && words[0].find_first_of(':') == std::string::npos) {
         // short cut
         for (std::vector<std::string>::iterator it = g_wordIndex[words[0]].begin() ; it != g_wordIndex[words[0]].end(); ++it) {
-            Note foundNote;
-            foundNote.setGuid(*it);
+            Note foundNote = this->noteDatabase[*it];
             noteCollection.addNote(foundNote);
         }
     } else {
