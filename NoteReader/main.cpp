@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -17,7 +18,6 @@ public:
     bool hasTag(std::string, long);
     bool hasKeyword(std::string, long);
     bool createdOnOrAfter(std::string);
-    std::vector<std::string> getWords();
 private:
     std::string guid;
     std::vector<std::string> tags;
@@ -60,13 +60,13 @@ public:
 
 class NoteReader {
 public:
-    void go(FILE*);
+    void go(FILE *);
 };
 
 std::string Util::readNextLine(FILE* fp) {
     char* line = new char[500];
     std::fgets(line,  500, fp);
-
+    
     if (line[strlen(line)-1] == '\n') {
         line[strlen(line)-1] = '\0';
     }
@@ -79,7 +79,7 @@ std::string Util::getXmlString(FILE* fp, std::string tag) {
     
     while (!feof(fp)) {
         line = Util::readNextLine(fp);
-
+        
         xmlString += line;
         if (strcmp(line.c_str(), tag.c_str()) == 0) {
             break;
@@ -99,7 +99,7 @@ Note Util::makeNoteFromXml(std::string xmlString) {
     std::string content = Util::extractStringFromXml(xmlString, "content");
     std::string created = Util::extractStringFromXml(xmlString, "created");
     std::vector<std::string> tags = Util::extractVectorFromXml(xmlString, "tag");
-
+    
     Note note;
     
     note.setGuid(guid);
@@ -132,10 +132,6 @@ std::vector<std::string> Note::getTags() {
     return this->tags;
 }
 
-std::vector<std::string> Note::getWords() {
-    return this->words;
-}
-
 void Note::setCreated(std::string dateString) {
     this->created = Util::createTimestamp(dateString);
 }
@@ -156,8 +152,6 @@ std::string Note::getContent() {
     return this->content;
 }
 
-std::unordered_map<std::string, std::vector<std::string>> g_wordIndex;
-
 void Note::setContent(std::string content) {
     this->content = content;
     
@@ -176,9 +170,6 @@ void Note::setContent(std::string content) {
                 count++;
                 this->words.push_back(word);
                 this->wordIndex[word] = true;
-                if (std::find(g_wordIndex[word].begin(), g_wordIndex[word].end(), this->guid) == g_wordIndex[word].end()) {
-                    g_wordIndex[word].push_back(this->guid);
-                }
             }
             
             word = "";
@@ -194,24 +185,7 @@ void NoteStore::updateNote(Note note) {
 };
 
 void NoteStore::deleteNote(std::string guid) {
-    std::vector<std::string> words = this->noteDatabase[guid].getWords();
-    
-    for (std::vector<std::string>::iterator it = words.begin() ; it != words.end(); ++it) {
-
-        for (std::vector<std::string>::iterator it2 = g_wordIndex[*it].begin() ; it2 !=  g_wordIndex[*it].end(); ++it2) {
-
-            if (*it2 == guid) {
-                g_wordIndex[*it].erase(it2);
-                if (it2 ==  g_wordIndex[*it].end()) {
-                    break;
-                }
-            }
-        }
-    }
-    
     this->noteDatabase.erase(guid);
-
-    
 };
 
 std::string Util::extractStringFromXml(std::string xml, std::string tag) {
@@ -252,14 +226,14 @@ std::vector<std::string> Util::extractVectorFromXml(std::string xml, std::string
         openTagPointer = strstr(closeTagPointer+1, openTag.c_str());
         closeTagPointer = strstr(closeTagPointer+1, closeTag.c_str());
     };
-
+    
     return retVector;
 }
 
 NoteCollection NoteStore::search(std::string term) {
     
     std::transform(term.begin(), term.end(), term.begin(), ::tolower);
-
+    
     std::string word = "";
     std::vector<std::string> words;
     
@@ -274,52 +248,45 @@ NoteCollection NoteStore::search(std::string term) {
             word = "";
         }
     }
-    
     if (word.length() > 0) {
         words.push_back(word);
     }
     
     NoteCollection noteCollection;
     Note note;
-
-    if (words.size() == 1 && words[0].find_first_of('*') == std::string::npos && words[0].find_first_of(':') == std::string::npos) {
-        // short cut
-        for (std::vector<std::string>::iterator it = g_wordIndex[words[0]].begin() ; it != g_wordIndex[words[0]].end(); ++it) {
-            Note foundNote = this->noteDatabase[*it];
-            noteCollection.addNote(foundNote);
-        }
-    } else {
-        for (auto it = this->noteDatabase.begin(); it != this->noteDatabase.end(); ++it) {
+    std::string guid;
+    
+    for ( auto it = this->noteDatabase.begin(); it != this->noteDatabase.end(); ++it ) {
+        
+        guid = it->first;
+        note = it->second;
+        
+        bool matchesAll = true;
+        
+        for (unsigned int i=0; i<words.size(); i++) {
+            std::string keyword = words[i];
+            long wildcardAt = keyword.find_first_of('*');
             
-            note = it->second;
-            
-            bool matchesAll = true;
-            
-            for (unsigned int i=0; i<words.size(); i++) {
-                std::string keyword = words[i];
-                long wildcardAt = keyword.find_first_of('*');
-                
-                if (strcmp(keyword.substr(0, 4).c_str(), "tag:") == 0) {
-                    if (!note.hasTag(keyword.substr(4,keyword.length()-4),wildcardAt-4)) {
-                        matchesAll = false;
-                        break;
-                    }
-                } else if (strcmp(keyword.substr(0, 8).c_str(), "created:") == 0) {
-                    if (!note.createdOnOrAfter(keyword.substr(8,keyword.length()-8))) {
-                        matchesAll = false;
-                        break;
-                    }
-                } else {
-                    if (!note.hasKeyword(keyword, wildcardAt)) {
-                        matchesAll = false;
-                        break;
-                    }
+            if (strcmp(keyword.substr(0, 4).c_str(), "tag:") == 0) {
+                if (!note.hasTag(keyword.substr(4,keyword.length()-4),wildcardAt-4)) {
+                    matchesAll = false;
+                    break;
+                }
+            } else if (strcmp(keyword.substr(0, 8).c_str(), "created:") == 0) {
+                if (!note.createdOnOrAfter(keyword.substr(8,keyword.length()-8))) {
+                    matchesAll = false;
+                    break;
+                }
+            } else {
+                if (!note.hasKeyword(keyword, wildcardAt)) {
+                    matchesAll = false;
+                    break;
                 }
             }
-            
-            if (matchesAll) {
-                noteCollection.addNote(note);
-            }
+        }
+        
+        if (matchesAll) {
+            noteCollection.addNote(note);
         }
     }
     
@@ -349,7 +316,7 @@ bool Note::hasTag(std::string term, long wildcardAt) {
 }
 
 bool Note::hasKeyword(std::string keyword, long wildcardAt) {
-
+    
     if (wildcardAt == std::string::npos) {
         return this->wordIndex.find(keyword) != this->wordIndex.end();
     }
@@ -359,14 +326,14 @@ bool Note::hasKeyword(std::string keyword, long wildcardAt) {
             return true;
         }
     }
-                
+    
     return false;
 }
 
 bool Note::createdOnOrAfter(std::string dateString) {
     dateString += "T00:00:00Z";
     long timestamp = Util::createTimestamp(dateString);
-
+    
     return this->created >= timestamp;
 }
 
@@ -383,14 +350,14 @@ std::vector<Note> NoteCollection::getNotes() {
 }
 
 void NoteReader::go(FILE* inputStream) {
-
+    
     NoteStore noteStore;
-
+    
     std::string command;
     
     while (!feof(inputStream)) {
         command = Util::readNextLine(inputStream);
-
+        
         if (strcmp(command.c_str(), "CREATE") == 0 || strcmp(command.c_str(), "UPDATE") == 0) {
             Note note = Util::readXml(inputStream, "</note>");
             noteStore.updateNote(note);
@@ -413,17 +380,18 @@ void NoteReader::go(FILE* inputStream) {
                 std::string output = results.substr(0,results.length()-1);
                 std::cout << output << "\n";
             }
+            
         }
-
+        
     }
 }
 
 int main(int argc, const char * argv[]) {
-
+    
     NoteReader noteReader;
-
-    //FILE* f = fopen("/Users/chris/git/evernote/tests/input3", "r");
-    noteReader.go(stdin);
-
+    
+    FILE *f = stdin;
+    noteReader.go(f);
+    
     return 0;
 }
