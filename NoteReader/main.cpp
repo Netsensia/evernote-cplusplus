@@ -59,7 +59,7 @@ public:
 
 class NoteReader {
 public:
-    void go();
+    void go(FILE*);
 };
 
 std::string Util::readNextLine(FILE* fp) {
@@ -253,11 +253,9 @@ NoteCollection NoteStore::search(std::string term) {
     
     NoteCollection noteCollection;
     Note note;
-    std::string guid;
 
     for ( auto it = this->noteDatabase.begin(); it != this->noteDatabase.end(); ++it ) {
         
-        guid = it->first;
         note = it->second;
         
         bool matchesAll = true;
@@ -348,25 +346,25 @@ std::vector<Note> NoteCollection::getNotes() {
     return this->notes;
 }
 
-void NoteReader::go() {
+void NoteReader::go(FILE* inputStream) {
 
     NoteStore noteStore;
 
     std::string command;
     
-    while (!feof(stdin)) {
-        command = Util::readNextLine(stdin);
+    while (!feof(inputStream)) {
+        command = Util::readNextLine(inputStream);
 
         if (strcmp(command.c_str(), "CREATE") == 0 || strcmp(command.c_str(), "UPDATE") == 0) {
-            Note note = Util::readXml(stdin, "</note>");
+            Note note = Util::readXml(inputStream, "</note>");
             noteStore.updateNote(note);
         }
         if (strcmp(command.c_str(), "DELETE") == 0) {
-            std::string guid = Util::readNextLine(stdin);
+            std::string guid = Util::readNextLine(inputStream);
             noteStore.deleteNote(guid);
         }
         if (strcmp(command.c_str(), "SEARCH") == 0) {
-            std::string term = Util::readNextLine(stdin);
+            std::string term = Util::readNextLine(inputStream);
             NoteCollection noteCollection = noteStore.search(term);
             std::vector<Note> notes = noteCollection.getNotes();
             if (notes.size() == 0) {
@@ -379,7 +377,6 @@ void NoteReader::go() {
                 std::string output = results.substr(0,results.length()-1);
                 std::cout << output << "\n";
             }
-            
         }
 
     }
@@ -389,7 +386,8 @@ int main(int argc, const char * argv[]) {
 
     NoteReader noteReader;
 
-    noteReader.go();
+    FILE* f = fopen("/Users/chris/git/evernote/tests/inputload", "r");
+    noteReader.go(f);
 
     return 0;
 }
